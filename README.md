@@ -79,28 +79,27 @@ flowchart LR
 
 ### Case decision flow (design)
 
-General orchestration design: green = success terminals / committed path; red = failed / escalated. Edge labels name the reason (demos `make 2`, `3`, `8`–`12` hit the red paths; `make 1` / `10` reach green).
+Green = commit / complete; red = escalated. Edge labels are the fail reasons (`make 2`, `3`, `8`–`12` → red; `make 1` / `10` → green).
 
 ```mermaid
-flowchart TB
-  A([Create case]) --> B{Patient eligible?}
+%%{init: {"flowchart": {"nodeSpacing": 8, "rankSpacing": 14, "padding": 2}}}%%
+flowchart LR
+  A([Case]) --> B{Eligible?}
   B -->|no| X[Escalated]
-  B -->|yes| C[Chase PCP order]
-  C --> D{SWO + F2F + home OK?}
-  D -->|timeout| X
-  D -->|incomplete| X
-  D -->|yes| E[Contact suppliers]
-  E --> F{Supplier outcome?}
-  F -->|exhausted / reject| X
-  F -->|no assignment| G{Patient consents?}
+  B -->|yes| C[PCP]
+  C --> D{Order OK?}
+  D -->|fail| X
+  D -->|yes| E[Suppliers]
+  E --> F{Match?}
+  F -->|none| X
+  F -->|no assign| G{Consent?}
   G -->|no| X
-  G -->|yes| H[Commit delivery]
-  F -->|qualified + assignment| H
-  H --> I{Delivery confirmed?}
+  G -->|yes| H[Commit]
+  F -->|ok| H
+  H --> I{Delivered?}
   I -->|stall| E
-  I -->|breach unrecovered| X
+  I -->|breach| X
   I -->|yes| J[Complete]
-
   classDef ok fill:#d4edda,stroke:#2d8a4e,color:#14532d
   classDef bad fill:#f8d7da,stroke:#b42318,color:#7f1d1d
   class H,J ok
