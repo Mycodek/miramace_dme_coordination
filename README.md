@@ -63,24 +63,54 @@ flowchart TB
 
 ### Happy-path case flow
 
+Successful coordination end-to-end (`make 1`, `make 4`–`6`):
+
 ```mermaid
 flowchart LR
+  A[Create case] --> B[Patient eligible]
+  B --> C[Chase PCP order]
+  C --> D[SWO + F2F + home OK]
+  D --> E[Contact suppliers]
+  E --> F[Qualified + accepts assignment]
+  F --> H[Commit delivery]
+  H --> I[Delivery confirmed]
+  I --> J[Complete]
+```
+
+### Failure-path case flow
+
+Policy, PCP, supplier, commitment, or patient-consent failures escalate (demos `make 2`, `3`, `8`–`12`):
+
+```mermaid
+flowchart TB
   A[Create case] --> B{Patient<br/>eligible?}
-  B -->|no| Z[Escalate]
+  B -->|no — weight / MRADL / etc.| Z[Escalate<br/>PATIENT_NOT_ELIGIBLE]
   B -->|yes| C[Chase PCP order]
   C --> D{SWO + F2F +<br/>home OK?}
-  D -->|no / timeout| Z
+  D -->|timeout / no response| Z2[Escalate<br/>PCP_UNRESPONSIVE]
+  D -->|incomplete / unsigned| Z3[Escalate<br/>ORDER_INVALID]
   D -->|yes| E[Contact suppliers]
-  E --> F{Qualified +<br/>assignment?}
-  F -->|no assignment| G[Ask patient]
+  E --> F{Supplier outcome?}
+  F -->|exhausted / none qualify| Z4[Escalate<br/>NO_SUPPLIER_AVAILABLE]
+  F -->|no assignment| G{Patient consent?}
+  G -->|no| Z5[Escalate<br/>ASSIGNMENT_CONSENT_DECLINED]
   G -->|yes| H[Commit delivery]
-  G -->|no| Z
-  F -->|yes| H
-  F -->|exhausted| Z
+  F -->|qualified + assignment| H
   H --> I{Delivery<br/>confirmed?}
-  I -->|stall / breach| E
-  I -->|yes| J[Complete]
+  I -->|stall / breach| R[Retry other suppliers]
+  R --> F
+  I -->|breach unrecovered| Z6[Escalate<br/>SUPPLIER_COMMITMENT_BROKEN]
 ```
+
+| Failure | Typical demo | Escalation reason |
+| --- | --- | --- |
+| Patient fails K0001 gates | `make 11` | `PATIENT_NOT_ELIGIBLE` |
+| PCP silent after retries | `make 2` | `PCP_UNRESPONSIVE` |
+| Verbal / incomplete order | `make 8` | `ORDER_INVALID` |
+| No viable supplier left | `make 9` | `NO_SUPPLIER_AVAILABLE` |
+| Commitment stall / breach | `make 3` | `SUPPLIER_COMMITMENT_BROKEN` |
+| Non-assignment, patient declines | `make 12` | `ASSIGNMENT_CONSENT_DECLINED` |
+| Non-assignment, patient accepts | `make 10` | continues → book (not a failure) |
 
 ### Runtime responsibilities
 
@@ -123,7 +153,9 @@ tests/
 ## Quick start
 
 ```bash
-make setup                 # .venv + .env (from .env.example if missing) + install
+make setup                 # fresh: clear cases.db, .venv + .env if missing, install
+make clean                 # clear cases.db, caches, free PORT (keeps .venv/.env)
+make clean-all             # clean + remove .venv (then make setup)
 make 1                     # happy_path with FakeLLM (default)
 make 1 use_llm=true        # same scenario, real Gemini/OpenAI from .env
 make server                # http://127.0.0.1:8000
@@ -131,7 +163,7 @@ make test
 make help
 ```
 
-`make setup` creates `.env` from `.env.example` when `.env` is missing (does not overwrite an existing `.env`). Fill API keys before `use_llm=true`:
+`make setup` deletes `data/cases.db` (and SQLite sidecars) so case history starts empty, creates `.env` from `.env.example` when missing (does not overwrite an existing `.env`), then installs deps. Fill API keys before `use_llm=true`:
 
 ```bash
 LLM_PROVIDER=gemini          # gemini | openai | fake

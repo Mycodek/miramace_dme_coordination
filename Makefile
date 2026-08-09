@@ -7,17 +7,19 @@ PORT ?= 8000
 use_llm ?= false
 LLM_FLAGS := $(if $(filter true 1 yes TRUE YES,$(use_llm)),,--fake-llm)
 
-.PHONY: help setup install test server demos 1 2 3 4 5 6 7 8 9 10 11 12 \
+.PHONY: help setup install clean clean-all test server demos 1 2 3 4 5 6 7 8 9 10 11 12 \
 	demo-happy demo-pcp demo-supplier
 
 help:
 	@echo "Mira Mace DME Coordinator"
 	@echo ""
 	@echo "Setup / use"
-	@echo "  make setup          create .venv, .env from .env.example, install deps"
+	@echo "  make setup          fresh start: clear cases.db, .venv, .env if missing, install"
 	@echo "  make install        reinstall into existing .venv"
+	@echo "  make clean          clear cases.db, caches, build artifacts (keeps .venv/.env)"
+	@echo "  make clean-all      clean + remove .venv (run make setup after)"
 	@echo "  make test           run pytest"
-	@echo "  make server         uvicorn app.main:app --reload"
+	@echo "  make server         free PORT then uvicorn (HOST/PORT overridable)"
 	@echo ""
 	@echo "Demos (numbered)"
 	@echo "  make 1              happy_path"
@@ -41,6 +43,8 @@ help:
 	@echo "  make 2 use_llm=true             same for pcp_timeout"
 
 setup:
+	@rm -f data/cases.db data/cases.db-wal data/cases.db-shm
+	@echo "Cleared case data (data/cases.db)."
 	python3 -m venv .venv
 	$(PIP) install -U pip
 	$(PIP) install -e ".[dev]"
@@ -50,15 +54,39 @@ setup:
 	else \
 		echo ".env already exists — left unchanged."; \
 	fi
-	@echo "Ready. Activate with: source .venv/bin/activate"
+	@echo "Ready (fresh). Activate with: source .venv/bin/activate"
 
 install:
 	$(PIP) install -e ".[dev]"
+
+clean:
+	@rm -f data/cases.db data/cases.db-wal data/cases.db-shm
+	@rm -rf .pytest_cache dist build *.egg-info .eggs
+	@find . -type d -name '__pycache__' -not -path './.venv/*' -exec rm -rf {} + 2>/dev/null || true
+	@find . -type f \( -name '*.py[cod]' -o -name '*.egg' \) -not -path './.venv/*' -delete 2>/dev/null || true
+	@pids=$$(lsof -tiTCP:$(PORT) -sTCP:LISTEN 2>/dev/null); \
+	if [ -n "$$pids" ]; then \
+		echo "Stopping listeners on port $(PORT) (pids: $$pids)..."; \
+		kill $$pids 2>/dev/null || true; \
+	fi
+	@echo "Clean done (kept .venv and .env)."
+
+clean-all: clean
+	@rm -rf .venv
+	@echo "Removed .venv. Run: make setup"
 
 test:
 	$(PYTHON) -m pytest -q
 
 server:
+	@pids=$$(lsof -tiTCP:$(PORT) -sTCP:LISTEN 2>/dev/null); \
+	if [ -n "$$pids" ]; then \
+		echo "Freeing port $(PORT) (pids: $$pids)..."; \
+		kill $$pids 2>/dev/null || true; \
+		sleep 0.3; \
+		pids=$$(lsof -tiTCP:$(PORT) -sTCP:LISTEN 2>/dev/null); \
+		if [ -n "$$pids" ]; then kill -9 $$pids 2>/dev/null || true; fi; \
+	fi
 	$(PYTHON) -m uvicorn app.main:app --reload --host $(HOST) --port $(PORT)
 
 demos:
