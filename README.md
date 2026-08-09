@@ -79,26 +79,27 @@ flowchart LR
 
 ### Case decision flow (design)
 
-Green = commit / complete; red = escalated. Edge labels are the fail reasons (`make 2`, `3`, `8`–`12` → red; `make 1` / `10` → green).
+Vertical design view: green = commit / complete; red = escalated. Verbose edge labels name fail/success reasons (`make 2`, `3`, `8`–`12` → red; `make 1` / `10` → green).
 
 ```mermaid
-%%{init: {"flowchart": {"nodeSpacing": 8, "rankSpacing": 14, "padding": 2}}}%%
-flowchart LR
-  A([Case]) --> B{Eligible?}
-  B -->|no| X[Escalated]
-  B -->|yes| C[PCP]
-  C --> D{Order OK?}
-  D -->|fail| X
-  D -->|yes| E[Suppliers]
-  E --> F{Match?}
-  F -->|none| X
-  F -->|no assign| G{Consent?}
-  G -->|no| X
-  G -->|yes| H[Commit]
-  F -->|ok| H
-  H --> I{Delivered?}
-  I -->|stall| E
-  I -->|breach| X
+%%{init: {"flowchart": {"nodeSpacing": 12, "rankSpacing": 18, "padding": 4, "diagramPadding": 4}}}%%
+flowchart TB
+  A([Create case]) --> B{Patient eligible?}
+  B -->|no — weight / MRADL / policy| X[Escalated]
+  B -->|yes| C[Chase PCP order]
+  C --> D{SWO + F2F + home OK?}
+  D -->|PCP timeout / no response| X
+  D -->|incomplete / unsigned order| X
+  D -->|yes| E[Contact suppliers]
+  E --> F{Supplier outcome?}
+  F -->|exhausted / rejected| X
+  F -->|does not accept assignment| G{Patient consents?}
+  G -->|declined| X
+  G -->|accepted| H[Commit delivery]
+  F -->|qualified + accepts assignment| H
+  H --> I{Delivery confirmed?}
+  I -->|stall — retry suppliers| E
+  I -->|commitment breach unrecovered| X
   I -->|yes| J[Complete]
   classDef ok fill:#d4edda,stroke:#2d8a4e,color:#14532d
   classDef bad fill:#f8d7da,stroke:#b42318,color:#7f1d1d
