@@ -77,40 +77,45 @@ flowchart LR
   I --> J[Complete]
 ```
 
-### Failure-path case flow
+### Case decision flow (design)
 
-Policy, PCP, supplier, commitment, or patient-consent failures escalate (demos `make 2`, `3`, `8`–`12`):
+General orchestration design: green = success terminals / committed path; red = failed / escalated. Edge labels name the reason (demos `make 2`, `3`, `8`–`12` hit the red paths; `make 1` / `10` reach green).
 
 ```mermaid
 flowchart TB
-  A[Create case] --> B{Patient<br/>eligible?}
-  B -->|no — weight / MRADL / etc.| Z[Escalate<br/>PATIENT_NOT_ELIGIBLE]
+  A([Create case]) --> B{Patient eligible?}
+  B -->|no| X[Escalated]
   B -->|yes| C[Chase PCP order]
-  C --> D{SWO + F2F +<br/>home OK?}
-  D -->|timeout / no response| Z2[Escalate<br/>PCP_UNRESPONSIVE]
-  D -->|incomplete / unsigned| Z3[Escalate<br/>ORDER_INVALID]
+  C --> D{SWO + F2F + home OK?}
+  D -->|timeout| X
+  D -->|incomplete| X
   D -->|yes| E[Contact suppliers]
   E --> F{Supplier outcome?}
-  F -->|exhausted / none qualify| Z4[Escalate<br/>NO_SUPPLIER_AVAILABLE]
-  F -->|no assignment| G{Patient consent?}
-  G -->|no| Z5[Escalate<br/>ASSIGNMENT_CONSENT_DECLINED]
+  F -->|exhausted / reject| X
+  F -->|no assignment| G{Patient consents?}
+  G -->|no| X
   G -->|yes| H[Commit delivery]
   F -->|qualified + assignment| H
-  H --> I{Delivery<br/>confirmed?}
-  I -->|stall / breach| R[Retry other suppliers]
-  R --> F
-  I -->|breach unrecovered| Z6[Escalate<br/>SUPPLIER_COMMITMENT_BROKEN]
+  H --> I{Delivery confirmed?}
+  I -->|stall| E
+  I -->|breach unrecovered| X
+  I -->|yes| J[Complete]
+
+  classDef ok fill:#d4edda,stroke:#2d8a4e,color:#14532d
+  classDef bad fill:#f8d7da,stroke:#b42318,color:#7f1d1d
+  class H,J ok
+  class X bad
 ```
 
-| Failure | Typical demo | Escalation reason |
+| Red path | Escalation reason | Demo |
 | --- | --- | --- |
-| Patient fails K0001 gates | `make 11` | `PATIENT_NOT_ELIGIBLE` |
-| PCP silent after retries | `make 2` | `PCP_UNRESPONSIVE` |
-| Verbal / incomplete order | `make 8` | `ORDER_INVALID` |
-| No viable supplier left | `make 9` | `NO_SUPPLIER_AVAILABLE` |
-| Commitment stall / breach | `make 3` | `SUPPLIER_COMMITMENT_BROKEN` |
-| Non-assignment, patient declines | `make 12` | `ASSIGNMENT_CONSENT_DECLINED` |
-| Non-assignment, patient accepts | `make 10` | continues → book (not a failure) |
+| Patient fails K0001 gates | `PATIENT_NOT_ELIGIBLE` | `make 11` |
+| PCP silent after retries | `PCP_UNRESPONSIVE` | `make 2` |
+| Verbal / incomplete order | `ORDER_INVALID` | `make 8` |
+| No viable supplier left | `NO_SUPPLIER_AVAILABLE` | `make 9` |
+| Commitment stall / breach | `SUPPLIER_COMMITMENT_BROKEN` | `make 3` |
+| Non-assignment, patient declines | `ASSIGNMENT_CONSENT_DECLINED` | `make 12` |
+| Non-assignment, patient accepts | *(green — book)* | `make 10` |
 
 ### Runtime responsibilities
 
