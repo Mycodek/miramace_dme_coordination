@@ -123,8 +123,7 @@ tests/
 ## Quick start
 
 ```bash
-make setup                 # .venv + install
-cp .env.example .env       # if present; else set keys in .env
+make setup                 # .venv + .env (from .env.example if missing) + install
 make 1                     # happy_path with FakeLLM (default)
 make 1 use_llm=true        # same scenario, real Gemini/OpenAI from .env
 make server                # http://127.0.0.1:8000
@@ -132,12 +131,17 @@ make test
 make help
 ```
 
-`.env` essentials:
+`make setup` creates `.env` from `.env.example` when `.env` is missing (does not overwrite an existing `.env`). Fill API keys before `use_llm=true`:
 
 ```bash
 LLM_PROVIDER=gemini          # gemini | openai | fake
 GEMINI_API_KEY=...
 GEMINI_MODEL=gemini-flash-latest
+OPENAI_API_KEY=...
+OPENAI_MODEL=gpt-4o-mini
+PCP_MAX_ATTEMPTS=3
+SUPPLIER_MAX_ATTEMPTS=2
+MAX_CONCURRENT_SUPPLIER_CONTACTS=3
 ```
 
 ---

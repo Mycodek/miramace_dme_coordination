@@ -14,7 +14,7 @@ help:
 	@echo "Mira Mace DME Coordinator"
 	@echo ""
 	@echo "Setup / use"
-	@echo "  make setup          create .venv and install deps (+dev)"
+	@echo "  make setup          create .venv, .env from .env.example, install deps"
 	@echo "  make install        reinstall into existing .venv"
 	@echo "  make test           run pytest"
 	@echo "  make server         uvicorn app.main:app --reload"
@@ -44,8 +44,13 @@ setup:
 	python3 -m venv .venv
 	$(PIP) install -U pip
 	$(PIP) install -e ".[dev]"
+	@if [ ! -f .env ]; then \
+		cp .env.example .env; \
+		echo "Created .env from .env.example — fill GEMINI_API_KEY / OPENAI_API_KEY as needed."; \
+	else \
+		echo ".env already exists — left unchanged."; \
+	fi
 	@echo "Ready. Activate with: source .venv/bin/activate"
-	@echo "Set LLM keys in .env (LLM_PROVIDER, GEMINI_API_KEY / OPENAI_API_KEY) as needed."
 
 install:
 	$(PIP) install -e ".[dev]"
