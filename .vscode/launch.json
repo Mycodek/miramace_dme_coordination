@@ -1,0 +1,85 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Demo: happy_path",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "app.demo",
+      "args": [
+        "--scenario",
+        "happy_path",
+        "--patient",
+        "PAT-ELEANOR"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": true
+    },
+    {
+      "name": "Demo: happy_path (fake-llm)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "app.demo",
+      "args": [
+        "--scenario",
+        "happy_path",
+        "--patient",
+        "PAT-ELEANOR",
+        "--fake-llm"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": true
+    },
+    {
+      "name": "Demo: pcp_timeout",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "app.demo",
+      "args": [
+        "--scenario",
+        "pcp_timeout",
+        "--patient",
+        "PAT-ELEANOR",
+        "--fake-llm"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": true
+    },
+    {
+      "name": "Demo: supplier_failure",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "app.demo",
+      "args": [
+        "--scenario",
+        "supplier_failure",
+        "--patient",
+        "PAT-JAMES",
+        "--fake-llm"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": true
+    },
+    {
+      "name": "FastAPI: runserver",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": [
+        "app.main:app",
+        "--reload",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "8000"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": true
+    }
+  ]
+}

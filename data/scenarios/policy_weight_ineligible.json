@@ -1,0 +1,26 @@
+{
+  "pcp": {
+    "attempts": ["submitted_valid"]
+  },
+  "default_supplier_outcome": "qualified",
+  "suppliers": {
+    "Lakeshore Home Medical Equipment": "qualified",
+    "Prairie State Medical Supply": "qualified"
+  },
+  "transcripts": {
+    "pcp.submitted_valid": "Face-to-face and home assessment on file. Signed SWO for {patient_name}, {equipment} {hcpcs}.",
+    "pcp.no_answer": "",
+    "pcp.incomplete": "Verbal only; written order not yet signed.",
+    "supplier.no_answer": "",
+    "supplier.not_accepting": "Not accepting new patients.",
+    "supplier.no_k0001": "No {hcpcs}.",
+    "supplier.out_of_stock": "Out of stock.",
+    "supplier.no_assignment": "We do not accept assignment.",
+    "supplier.qualified": "Medicare Part B, accept assignment (20% coinsurance), {equipment} available.",
+    "supplier.silent": "",
+    "supplier.confirmed": "Delivered."
+  },
+  "clock": { "start": "2026-08-09" },
+  "auto_confirm_delivery": true,
+  "notes": "Pair with PAT-MARCUS (weight 275 > K0001 250 lb limit). Escalates at patient/policy layer before PCP work."
+}

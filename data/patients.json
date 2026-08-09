@@ -1,0 +1,71 @@
+{
+  "PAT-ELEANOR": {
+    "patient_id": "PAT-ELEANOR",
+    "name": "Eleanor Martinez",
+    "city": "Chicago",
+    "equipment": "standard manual wheelchair",
+    "pcp": {
+      "pcp_id": "PCP-SUNRISE",
+      "name": "Dr. Sarah Chen",
+      "practice": "Sunrise Family Medicine",
+      "phone": "312-555-0100"
+    },
+    "eligibility": {
+      "medicare_part_b": true,
+      "weight_lbs": 158,
+      "in_home_mradl_limitation": true,
+      "lesser_device_insufficient": true,
+      "can_self_propel_or_has_caregiver": true,
+      "home_accessible": true,
+      "outdoor_use_only": false,
+      "leisure_only": false,
+      "backup_device_only": false
+    }
+  },
+  "PAT-JAMES": {
+    "patient_id": "PAT-JAMES",
+    "name": "James Okonkwo",
+    "city": "Naperville",
+    "equipment": "standard manual wheelchair",
+    "pcp": {
+      "pcp_id": "PCP-FOXVALLEY",
+      "name": "Dr. Anita Patel",
+      "practice": "Fox Valley Primary Care",
+      "phone": "630-555-0199"
+    },
+    "eligibility": {
+      "medicare_part_b": true,
+      "weight_lbs": 190,
+      "in_home_mradl_limitation": true,
+      "lesser_device_insufficient": true,
+      "can_self_propel_or_has_caregiver": true,
+      "home_accessible": true,
+      "outdoor_use_only": false,
+      "leisure_only": false,
+      "backup_device_only": false
+    }
+  },
+  "PAT-MARCUS": {
+    "patient_id": "PAT-MARCUS",
+    "name": "Marcus Webb",
+    "city": "Chicago",
+    "equipment": "standard manual wheelchair",
+    "pcp": {
+      "pcp_id": "PCP-LAKEVIEW",
+      "name": "Dr. Priya Nair",
+      "practice": "Lakeview Primary Care",
+      "phone": "773-555-0142"
+    },
+    "eligibility": {
+      "medicare_part_b": true,
+      "weight_lbs": 275,
+      "in_home_mradl_limitation": true,
+      "lesser_device_insufficient": true,
+      "can_self_propel_or_has_caregiver": true,
+      "home_accessible": true,
+      "outdoor_use_only": false,
+      "leisure_only": false,
+      "backup_device_only": false
+    }
+  }
+}

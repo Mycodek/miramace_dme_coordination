@@ -1,0 +1,27 @@
+{
+  "pcp": {
+    "attempts": ["submitted_valid"]
+  },
+  "default_supplier_outcome": "no_assignment",
+  "suppliers": {
+    "Lakeshore Home Medical Equipment": "no_assignment",
+    "Windy City Mobility & DME": "no_assignment",
+    "Prairie State Medical Supply": "qualified",
+    "Heartland Home Health Supply": "no_assignment"
+  },
+  "transcripts": {
+    "pcp.submitted_valid": "Face-to-face and home assessment documented. Signed SWO for {patient_name}, {equipment} {hcpcs}.",
+    "pcp.no_answer": "",
+    "pcp.incomplete": "Verbal only; written order not yet signed.",
+    "supplier.no_answer": "",
+    "supplier.not_accepting": "Not accepting new patients.",
+    "supplier.no_k0001": "No {hcpcs}.",
+    "supplier.out_of_stock": "Out of stock.",
+    "supplier.no_assignment": "We can supply {equipment} under Medicare Part B but we do not accept assignment and may balance bill above the 20% coinsurance.",
+    "supplier.qualified": "We accept Medicare Part B and accept assignment — patient pays only 20% coinsurance. {equipment} available for {patient_city} in two days.",
+    "supplier.silent": "",
+    "supplier.confirmed": "Delivered to {patient_name}."
+  },
+  "clock": { "start": "2026-08-09" },
+  "auto_confirm_delivery": true
+}

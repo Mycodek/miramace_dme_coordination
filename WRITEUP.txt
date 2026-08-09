@@ -1,0 +1,198 @@
+Mira Mace — DME Coordination Prototype
+Cover writeup: problem understanding, research, decisions, architecture, cuts, next steps
+
+
+Time box and intent
+
+In roughly a 3–4 hour build window I shipped a lean backend prototype—not a
+chatbot wrapper and not a LangChain/LangGraph platform. I used Cursor and
+ChatGPT as development tools to move faster on scaffolding, refactors, prompts,
+and docs while I owned the product decisions: what to deepen, what to cut, and
+how policy and orchestration should behave. I orchestrated PCP, supplier, and
+patient workflows; managed case state and transitions; stood up a demo/CLI
+system with scenario switches and make use_llm=true/false so paths are easy to
+re-run against FakeLLM or live Gemini; encoded Medicare-oriented policy gates
+(medicare-k0001-v1); and put the patient in the loop when a supplier refuses
+assignment (balance-billing / ~20% coinsurance exposure). I kept the system
+simple and workflow-defined so I could go deep on one business problem: supplier
+matching and confirming the order under policy constraints.
+
+
+1. What I understood of the problem
+
+Getting a standard manual wheelchair (HCPCS K0001) to a Medicare patient is an
+operations problem across four parties:
+
+  • Patient — needs equipment quickly; must understand cost if a supplier does
+    not accept Medicare assignment.
+  • PCP — must produce a signed Standard Written Order (SWO), face-to-face
+    mobility evaluation, and home assessment.
+  • Supplier — must accept new patients, enroll in Part B, stock/deliver K0001,
+    and preferably accept assignment.
+  • Ops / Mira — sequence unreliable phone follow-ups, enforce policy gates,
+    recover from stalls, escalate cleanly.
+
+The hard part is that sequencing under coverage rules—not generating chat. My
+working model was: LLMs interpret unstructured transcripts; deterministic policy
+validates; the orchestrator decides; mocks act; events record. The slice I
+deepened most is finding a viable Medicare DME supplier, committing delivery,
+recovering when commitment stalls, and handling assignment refusal with an
+explicit patient yes/no—while still requiring patient eligibility and a complete
+PCP order before a match can stick.
+
+In scope for this build: eligibility gates, PCP order chase, supplier search →
+qualify → commit → confirm, patient yes/no on non-assignment, scenario demos,
+and a read-only case API.
+
+
+2. Research, Gemini, and assumptions
+
+I used Gemini in two distinct places:
+
+  Research / policy. Gemini-sourced Medicare K0001 detail (qualifications,
+  disqualifiers, SWO / face-to-face / home assessment, capped rental, KX and
+  assignment economics) informed what I chose to encode as hard gates vs leave
+  as future policy packs.
+
+  Runtime extraction. Default LLM_PROVIDER is gemini (gemini-flash-latest via
+  GEMINI_API_KEY). GeminiLLMClient extracts structured facts from mock PCP and
+  supplier call transcripts (OrderExtraction / SupplierFacts) inside the PCP and
+  supplier workflows. OpenAI is optional; FakeLLM covers offline/tests or missing
+  keys. Extraction is never the decision authority—policies and the orchestrator
+  are. Prompts stay general; the output JSON schema is built from the Pydantic
+  models (ExtractSchema.to_json()) so new fields flow into the template without
+  hardcoding field lists in the provider.
+
+Policy takeaways I encoded (selectively, version medicare-k0001-v1):
+  • K0001 = standard manual wheelchair under Part B DME; not automatic coverage.
+  • Patient gates: in-home MRADL need, lesser device insufficient, self-propel or
+    caregiver, home access, weight ≤ 250 lbs, outdoor-only / leisure / backup-only
+    disqualifiers.
+  • PCP gates: signed SWO, face-to-face, home assessment on file.
+  • Supplier gates: accepting patients, Part B, K0001 stock/delivery, accepting
+    assignment—or patient consent if they will not accept assignment.
+
+Obvious assumptions kept explicit:
+  • Scenarios mock the external world (phones / follow-ups), not the orchestrator.
+  • “Verbal order / written pending” is implied by starting without a validated
+    order unless we later store intake status explicitly.
+  • Parallel PCP + supplier chase is OK for demo latency; real ops may serialize.
+  • Assignment consent is scenario-driven for demos; production needs async wait
+    + human oversight.
+  • FakeLLM keyword fallback keeps demos green without live API quota.
+
+
+3. Sequencing — what I built and how I decided
+
+I sequenced a demo-ready vertical slice, not a platform skeleton:
+
+  1) Domain entities and case event model (status, candidates, commitment,
+     escalation, patient messages).
+  2) Scenario-driven mock world for deterministic demos without telephony.
+  3) PCP / supplier / patient workflows with a small LLM protocol (Gemini default;
+     schema-driven prompts from Pydantic).
+  4) Policies as Norm classes plus helpers for validate / qualify / match.
+  5) Orchestrator tick loop: create case → eligibility → chase order → search →
+     qualify → match / patient consent → commit → confirm or stall/recover →
+     escalate.
+  6) Demo harness (Makefile scenarios 1–12, use_llm override, .env provider) and
+     a thin read-only FastAPI for cases / patients / suppliers after demos.
+
+Why this order: without state + orchestration, demos lie; without policy,
+matching is unsafe; without patient-in-loop on charge/assignment refusal, the
+supplier story is incomplete. Broader care navigation exists only where it
+unblocks matching and confirmation.
+
+
+4. Technology and architecture
+
+Lean backend stack (intentionally small):
+  • Python 3.11+, FastAPI + Uvicorn (read-only inspection API)
+  • Pydantic / pydantic-settings for models and config
+  • SQLite for case persistence (JSON blobs + event trail in cases.db)
+  • Gemini (httpx → Generative Language API) as default extractor; OpenAI/Fake
+    behind the same protocol
+  • pytest + scenario JSON; Makefile targets for happy and failure paths
+  • Explicit CaseOrchestrator—no LangChain/LangGraph
+
+Pipeline:
+  patients.json + suppliers.csv + scenarios/*.json
+    → ScenarioWorld + roster loaders
+    → workflows (pcp / supplier / patient; Gemini extracts where configured)
+    → policies.py (norms) + helper.py
+    → CaseOrchestrator (transitions, retries, match gating, escalation, consent)
+    → CaseRepository
+    → CLI demos (make 1…12) + GET APIs (/cases, /patients, /suppliers)
+
+Implementation decisions worth calling out:
+  • Interpret vs decide: LLM shapes structured facts; norms decide accept/reject.
+  • Schema-as-contract: extract prompt output shape is the Pydantic model itself.
+  • Events over opaque agent memory: every meaningful step is recorded on the case.
+  • Settings/scenario switches over hardcoding: swap patient, scenario, or
+    use_llm=true without rewriting code.
+  • Lean packages (entities, repositories/rosters, workflows, orchestration, llm)
+    so the control flow stays readable in a short review.
+
+
+5. The cut list — what I deliberately did not do
+
+  • Real telephony / EHR / eligibility APIs / fax / portal adapters
+  • Production auth, multi-tenant UI, Temporal/queues, agent frameworks
+  • Full LCD text, prior auth, claim submission (KX, rental cycles)—only gates
+    that change demo decisions
+  • Normalized Postgres schema / migration framework
+  • Formal LLM eval harness, rich observability stack, or operator control plane
+
+Why: in a few hours those do not improve the core story—match a supplier and
+confirm delivery under policy—with a lean demo system people can actually run.
+
+
+6. What’s next (and why that order)
+
+With 1 more day
+  • First-class assignment-consent wait + resume (webhook / admin action).
+  • Explicit intake fields (verbal vs written pending) on the case glance.
+  • Stakeholder runbook for the sharpest failure demos (weight ineligible,
+    assignment declined).
+
+With more time (days → ~2 weeks) — evals, observability, security, control
+  • Evals: golden transcripts and scenario fixtures scored for extraction
+    accuracy, policy false accept/reject, and end-to-end outcome correctness
+    across Gemini (and optional OpenAI) so model/prompt changes are regression-
+    safe before they touch orchestration.
+  • Observability: structured logs/metrics/traces per lane (PCP / supplier /
+    patient), latency and failure rates on Gemini calls, case timeline views.
+  • Security & production readiness: authZ on case APIs, secrets hygiene, PHI-
+    aware redaction in logs/prompts, rate limits, audit export.
+  • Control system: human workbench for escalation, transcript review, and
+    override-with-reason; adapter interfaces replacing ScenarioWorld mocks;
+    versioned policy packs; Postgres + durable queues if needed.
+  • Live Medicare / coverage confirmation: real-time eligibility and policy
+    query path (beneficiary coverage, DMEPOS / K0001 confirmation, related
+    checks at decision points) instead of static encoded norms alone.
+  • Smarter supplier identification: ranking from past call outcomes—connect
+    rates, commitment keep rates, assignment acceptance, time-to-confirm,
+    delivery success, geography/HCPCS fit, and structured notes from prior
+    transcripts—beyond today’s roster filters.
+  • Parallelization for faster resolution: concurrent supplier (and where safe,
+    PCP) outreach with bounded fan-out, shared case locks, and early-cancel when
+    one supplier confirms—less wall-clock loss on sequential callbacks.
+
+Order rationale: day-one work makes consent/intake demo-true; then evals protect
+the LLM+policy contract; then observability and security make it operable;
+then live Medicare queries, ranked supplier matching, parallel outreach, and a
+control plane make it production-shaped—only after matching and confirmation
+are trusted.
+
+
+Closing
+
+In the 3–4 hour window—working with Cursor and ChatGPT as build tools—I shipped
+a lean, readable backend prototype: an orchestrator that runs multiple
+workflows, manages state, incorporates medicare-k0001-v1 policy, demos via
+scenarios and use_llm, exposes a read-only case API, and keeps the patient in
+the loop when assignment (the charge / coinsurance path) is refused—using Gemini
+both to research policy and to extract transcript facts via schema-driven
+prompts. With more time I would invest first in evals, then observability,
+security, and a production-ready control system, in that order, so depth on
+supplier matching and order confirmation stays the product’s center of gravity.

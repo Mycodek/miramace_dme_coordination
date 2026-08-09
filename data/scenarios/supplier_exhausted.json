@@ -1,0 +1,35 @@
+{
+  "pcp": {
+    "attempts": ["submitted_valid"]
+  },
+  "default_supplier_outcome": "not_accepting",
+  "suppliers": {
+    "Lakeshore Home Medical Equipment": "no_answer",
+    "Windy City Mobility & DME": "not_accepting",
+    "Prairie State Medical Supply": "no_k0001",
+    "Midwest Mobility Solutions": "out_of_stock",
+    "Chicagoland Rehab Supply": "not_accepting",
+    "North Shore DME Partners": "no_answer",
+    "Urban Care Medical Equipment": "no_k0001",
+    "Heartland Home Health Supply": "not_accepting",
+    "Great Lakes Wheelchair Co": "out_of_stock",
+    "South Side Medical Depot": "not_accepting",
+    "Fox Valley Durable Medical": "no_answer",
+    "Metro Assistive Devices": "no_k0001"
+  },
+  "transcripts": {
+    "pcp.submitted_valid": "Face-to-face and home assessment on file. Signed SWO for {patient_name}, {equipment} {hcpcs}.",
+    "pcp.no_answer": "",
+    "pcp.incomplete": "Verbal only; written order not yet signed.",
+    "supplier.no_answer": "",
+    "supplier.not_accepting": "We are not accepting new Medicare patients.",
+    "supplier.no_k0001": "We do not provide {hcpcs} / {equipment}.",
+    "supplier.out_of_stock": "{hcpcs} temporarily out of stock.",
+    "supplier.no_assignment": "We do not accept assignment.",
+    "supplier.qualified": "Accept assignment, Medicare Part B, {equipment} available.",
+    "supplier.silent": "",
+    "supplier.confirmed": "Delivered."
+  },
+  "clock": { "start": "2026-08-09" },
+  "auto_confirm_delivery": false
+}

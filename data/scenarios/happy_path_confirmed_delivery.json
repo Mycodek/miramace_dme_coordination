@@ -1,0 +1,36 @@
+{
+  "pcp": {
+    "attempts": ["submitted_valid"]
+  },
+  "default_supplier_outcome": "qualified",
+  "default_follow_up_outcome": "confirmed",
+  "suppliers": {
+    "Lakeshore Home Medical Equipment": "qualified",
+    "Prairie State Medical Supply": "qualified",
+    "Heartland Home Health Supply": "qualified"
+  },
+  "follow_up": {
+    "Lakeshore Home Medical Equipment": "confirmed",
+    "Prairie State Medical Supply": "confirmed",
+    "Heartland Home Health Supply": "confirmed"
+  },
+  "transcripts": {
+    "pcp.submitted_valid": "{pcp_name} completed face-to-face and home assessment. Signed standard written order for {patient_name}, {equipment} {hcpcs}.",
+    "pcp.no_answer": "",
+    "pcp.incomplete": "Verbal only; written order not yet signed.",
+    "supplier.no_answer": "",
+    "supplier.not_accepting": "Not accepting new patients.",
+    "supplier.no_k0001": "No {hcpcs}.",
+    "supplier.out_of_stock": "Out of stock.",
+    "supplier.no_assignment": "We do not accept assignment.",
+    "supplier.qualified": "Medicare Part B, accept assignment (20% coinsurance), {equipment} in stock, deliver to {patient_city} in two days.",
+    "supplier.silent": "",
+    "supplier.confirmed": "Yes, the equipment was delivered to {patient_name} today as committed."
+  },
+  "clock": {
+    "start": "2026-08-09",
+    "advance_after_commit_to": "2026-08-12"
+  },
+  "auto_confirm_delivery": false,
+  "stall_commitment": true
+}

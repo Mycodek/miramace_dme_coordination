@@ -1,0 +1,25 @@
+{
+  "pcp": {
+    "attempts": ["incomplete", "incomplete", "incomplete"]
+  },
+  "default_supplier_outcome": "qualified",
+  "suppliers": {
+    "Lakeshore Home Medical Equipment": "qualified",
+    "Prairie State Medical Supply": "qualified"
+  },
+  "transcripts": {
+    "pcp.submitted_valid": "Signed SWO with face-to-face and home assessment for {patient_name}, {equipment} {hcpcs}.",
+    "pcp.no_answer": "",
+    "pcp.incomplete": "This is {practice}. We only have a verbal only note for {patient_name}; written order not yet signed and face-to-face incomplete.",
+    "supplier.no_answer": "",
+    "supplier.not_accepting": "Not accepting new patients.",
+    "supplier.no_k0001": "No {hcpcs}.",
+    "supplier.out_of_stock": "Out of stock.",
+    "supplier.no_assignment": "We do not accept assignment.",
+    "supplier.qualified": "Medicare Part B, accept assignment (20% coinsurance), {equipment} available.",
+    "supplier.silent": "",
+    "supplier.confirmed": "Delivered."
+  },
+  "clock": { "start": "2026-08-09" },
+  "auto_confirm_delivery": false
+}

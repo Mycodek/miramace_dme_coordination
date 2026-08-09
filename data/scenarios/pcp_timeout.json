@@ -1,0 +1,26 @@
+{
+  "pcp": {
+    "attempts": ["no_answer", "no_answer", "no_answer"]
+  },
+  "default_supplier_outcome": "qualified",
+  "suppliers": {
+    "Lakeshore Home Medical Equipment": "no_answer",
+    "Windy City Mobility & DME": "not_accepting",
+    "Prairie State Medical Supply": "qualified"
+  },
+  "transcripts": {
+    "pcp.submitted_valid": "Face-to-face and home assessment documented. Signed standard written order for {patient_name}, {equipment} {hcpcs}.",
+    "pcp.no_answer": "",
+    "supplier.no_answer": "",
+    "supplier.not_accepting": "We are not accepting new Medicare patients.",
+    "supplier.no_k0001": "We do not provide {hcpcs} devices.",
+    "supplier.out_of_stock": "{hcpcs} is out of stock temporarily. We accept Medicare.",
+    "supplier.qualified": "We accept Medicare Part B and accept assignment (patient 20% coinsurance only). New patients OK, {equipment} available, can deliver to {patient_city} in two days.",
+    "supplier.silent": "",
+    "supplier.confirmed": "Delivered to {patient_name}."
+  },
+  "clock": {
+    "start": "2026-08-09"
+  },
+  "auto_confirm_delivery": false
+}

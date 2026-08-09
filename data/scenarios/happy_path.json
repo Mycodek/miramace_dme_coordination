@@ -1,0 +1,36 @@
+{
+  "pcp": {
+    "attempts": ["submitted_valid"]
+  },
+  "default_supplier_outcome": "no_answer",
+  "suppliers": {
+    "Lakeshore Home Medical Equipment": "no_answer",
+    "Windy City Mobility & DME": "not_accepting",
+    "Prairie State Medical Supply": "qualified",
+    "Midwest Mobility Solutions": "no_k0001",
+    "Chicagoland Rehab Supply": "out_of_stock",
+    "North Shore DME Partners": "not_accepting",
+    "Urban Care Medical Equipment": "qualified",
+    "Heartland Home Health Supply": "no_k0001",
+    "Great Lakes Wheelchair Co": "qualified",
+    "South Side Medical Depot": "not_accepting",
+    "Fox Valley Durable Medical": "no_answer",
+    "Metro Assistive Devices": "qualified"
+  },
+  "transcripts": {
+    "pcp.submitted_valid": "This is {practice}. Face-to-face mobility evaluation is on file. Home assessment confirms the wheelchair fits. {pcp_name} has signed the standard written order for {patient_name} dated today for a {equipment}, HCPCS {hcpcs}. The signed order will be sent today.",
+    "pcp.no_answer": "",
+    "supplier.no_answer": "",
+    "supplier.not_accepting": "We are not accepting new Medicare patients at this time. Please try another supplier.",
+    "supplier.no_k0001": "We mainly stock power chairs and scooters. We do not provide {equipment} or {hcpcs} devices.",
+    "supplier.out_of_stock": "We do accept Medicare Part B and new patients, but our {equipment} units are temporarily out of stock. Call back in a few days.",
+    "supplier.qualified": "Yes, we are taking new Medicare Part B patients. We accept assignment so the patient only pays the 20% coinsurance. We have {equipment} {hcpcs} in stock and can deliver to {patient_city} in two days.",
+    "supplier.silent": "",
+    "supplier.confirmed": "Delivery completed today for the {hcpcs} equipment to {patient_name}."
+  },
+  "clock": {
+    "start": "2026-08-09",
+    "commitment_confirm_on": "2026-08-11"
+  },
+  "auto_confirm_delivery": true
+}
